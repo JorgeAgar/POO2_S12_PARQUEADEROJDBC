@@ -11,11 +11,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import poo2.parqueadero.model.ParqueaderoFachada;
+import poo2.parqueadero.model.dao.VehiculoDTO;
  
 public class IngresarCarroController {
  
@@ -38,7 +41,7 @@ public class IngresarCarroController {
     private Button cmdRetirarCarro; // Value injected by FXMLLoader
 
     @FXML // fx:id="lstVehiculos"
-    private ListView<?> lstVehiculos; // Value injected by FXMLLoader
+    private ListView<VehiculoDTO> lstVehiculos; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtMarca"
     private TextField txtMarca; // Value injected by FXMLLoader
@@ -54,17 +57,41 @@ public class IngresarCarroController {
 
     private ObservableList<Integer> puertas = FXCollections.observableArrayList();
     private ObservableList<Integer> cilindraje = FXCollections.observableArrayList();
+    private ObservableList<VehiculoDTO> vehiculos = FXCollections.observableArrayList();
 
     private ParqueaderoFachada fachada;
+    private Alert alerta;
  
     @FXML
     void registrarCarro(ActionEvent event) {
-        
+        try {
+        	String marca = txtMarca.getText();
+        	String modelo = txtModelo.getText();
+        	String placa = txtPlaca.getText();
+        	int cilindraje = cboCilindraje.getSelectionModel().getSelectedItem();
+        	int puertas = cboPuertas.getSelectionModel().getSelectedItem();
+        	
+        	fachada.registrarCarro(placa, marca, modelo, cilindraje, puertas);
+        } catch(Exception e) {
+        	alerta.setContentText(e.getMessage());
+        	alerta.show();
+        }
     }
 
     @FXML
     void retirarCarro(ActionEvent event) {
-
+    	try {
+    		String placa = txtPlaca.getText();
+    		
+    		fachada.retirarCarro(placa);
+    	} catch(Exception e) {
+    		alerta.setContentText(e.getMessage());
+    		alerta.show();
+    	}
+    }
+    
+    private void actualizarListado() {
+    	vehiculos.setAll(fachada.listar());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -79,10 +106,15 @@ public class IngresarCarroController {
         assert txtModelo != null : "fx:id=\"txtModelo\" was not injected: check your FXML file 'IngresarCarroView.fxml'.";
         assert txtPlaca != null : "fx:id=\"txtPlaca\" was not injected: check your FXML file 'IngresarCarroView.fxml'.";
 
-        initCilindraje();
-        initPuertas();
+        initListados();
         fachada = ParqueaderoFachada.getInstance();
-
+        alerta = new Alert(AlertType.ERROR);
+    }
+    
+    private void initListados() {
+    	initPuertas();
+    	initCilindraje();
+    	initListVehiculos();
     }
 
     private void initPuertas(){
@@ -99,6 +131,10 @@ public class IngresarCarroController {
         cilindraje.add(1500);
         cilindraje.add(2000);
         cboCilindraje.setItems(cilindraje);
+    }
+    
+    private void initListVehiculos() {
+    	lstVehiculos.setItems(vehiculos);
     }
 
 }
