@@ -72,6 +72,7 @@ public class IngresarCarroController {
         	int puertas = cboPuertas.getSelectionModel().getSelectedItem();
         	
         	fachada.registrarCarro(placa, marca, modelo, cilindraje, puertas);
+        	actualizarListado();
         } catch(Exception e) {
         	alerta.setContentText(e.getMessage());
         	alerta.show();
@@ -82,8 +83,10 @@ public class IngresarCarroController {
     void retirarCarro(ActionEvent event) {
     	try {
     		String placa = txtPlaca.getText();
+    		int minutos = Integer.parseInt(txtMinutos.getText());
     		
-    		fachada.retirarCarro(placa);
+    		fachada.retirarCarro(placa, minutos);
+    		actualizarListado();
     	} catch(Exception e) {
     		alerta.setContentText(e.getMessage());
     		alerta.show();
@@ -106,8 +109,9 @@ public class IngresarCarroController {
         assert txtModelo != null : "fx:id=\"txtModelo\" was not injected: check your FXML file 'IngresarCarroView.fxml'.";
         assert txtPlaca != null : "fx:id=\"txtPlaca\" was not injected: check your FXML file 'IngresarCarroView.fxml'.";
 
-        initListados();
         fachada = ParqueaderoFachada.getInstance();
+        initListados();
+        actualizarListado();
         alerta = new Alert(AlertType.ERROR);
     }
     

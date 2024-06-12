@@ -29,7 +29,7 @@ public class CarroDAO {
 		try {
 			Statement statementOb = conn.createStatement();
 			
-			String sqlString = "INSERT INTO VEHICULOS_PARQUEADOS (PLACA, MARCA, MODELO, CILINDRAJE, NUM_PUERTAS) VALUES "
+			String sqlString = "INSERT INTO CARROS_PARQUEADOS (PLACA, MARCA, MODELO, CILINDRAJE, PUERTAS) VALUES "
 					+ "('"+placa+"', '"+marca+"', '"+modelo+"', "+cilindraje+", "+noPuertas+")";
 			
 			statementOb.executeUpdate(sqlString);
@@ -47,15 +47,33 @@ public class CarroDAO {
 		return exito;
 	}
 	
-	public boolean retirarCarro(String placa) {
+	public boolean retirarCarro(String placa, int minutos) {
 		boolean exito = false;
 		
 		try {
 			Statement statementOb = conn.createStatement();
-			String sqlString = "DELETE FROM VEHICULOS_PARQUEADOS WHERE PLACA=" + placa;			
+			
+			ResultSet rs = statementOb.executeQuery("SELECT * FROM CARROS_PARQUEADOS WHERE PLACA='" + placa + "'");
+	        
+	        CarroDTO dto = new CarroDTO();
+	        while(rs.next()) {
+		        dto.setPlaca(rs.getString("PLACA"));
+		        dto.setMarca(rs.getString("MARCA"));
+		        dto.setModelo(rs.getString("MODELO"));
+		        dto.setCilindraje(rs.getInt("CILINDRAJE"));
+		        dto.setNoPuertas(rs.getInt("PUERTAS"));
+	        }
+	        
+	        String sqlString = "DELETE FROM CARROS_PARQUEADOS WHERE PLACA='" + placa + "'";	
 			statementOb.executeUpdate(sqlString);
+			
+			sqlString = "INSERT INTO CARROS_HISTORICO (PLACA, MARCA, MODELO, CILINDRAJE, PUERTAS, MINUTOS) VALUES "
+					+ "('"+placa+"', '"+dto.getMarca()+"', '"+dto.getModelo()+"', "+dto.getCilindraje()+", "+dto.getNoPuertas()+", "+minutos+")";
+			statementOb.executeUpdate(sqlString);
+			
 			exito = true;
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		} finally {
 			try {
@@ -81,7 +99,7 @@ public class CarroDAO {
 	        	dto.setMarca(rs.getString("MARCA"));
 	        	dto.setModelo(rs.getString("MODELO"));
 	        	dto.setCilindraje(rs.getInt("CILINDRAJE"));
-	        	dto.setNoPuertas(rs.getInt("NUM_PUERTAS"));
+	        	dto.setNoPuertas(rs.getInt("PUERTAS"));
 	        	
 	        	carros.add(dto);
 	        	
@@ -103,20 +121,21 @@ public class CarroDAO {
 		return carros;
 	}
 	
-	public ArrayList<VehiculoDTO> listar(){
+	public ArrayList<VehiculoDTO> listarCarros(){
 		ArrayList<VehiculoDTO> vehiculos = new ArrayList<VehiculoDTO>();
 		Statement statementOb = null;
 		
 		try {
 			statementOb = conn.createStatement();
-	        ResultSet rs = statementOb.executeQuery("SELECT * FROM VEHICULOS_PARQUEADOS");
+	        ResultSet rs = statementOb.executeQuery("SELECT * FROM CARROS_PARQUEADOS");
 	        
 	        while (rs.next()) {
-	        	VehiculoDTO dto = new VehiculoDTO();
+	        	CarroDTO dto = new CarroDTO();
 	        	dto.setPlaca(rs.getString("PLACA"));
 	        	dto.setMarca(rs.getString("MARCA"));
 	        	dto.setModelo(rs.getString("MODELO"));
 	        	dto.setCilindraje(rs.getInt("CILINDRAJE"));
+	        	dto.setNoPuertas(rs.getInt("PUERTAS"));
 	        	
 	        	vehiculos.add(dto);
 	        	
@@ -136,6 +155,28 @@ public class CarroDAO {
 		}
 		
 		return vehiculos;
+	}
+	
+	public int getMinutosCarros() {
+		int minutosCarros = 0;
+		try {
+			Statement statementOb = conn.createStatement();
+			ResultSet rs = statementOb.executeQuery("SELECT * FROM CARROS_HISTORICO");
+			
+			while(rs.next()) {
+				minutosCarros += rs.getInt("MINUTOS");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return minutosCarros;
 	}
 	
 }

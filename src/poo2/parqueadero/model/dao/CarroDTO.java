@@ -21,5 +21,12 @@ public class CarroDTO extends VehiculoDTO{
     public void setNoPuertas(int noPuertas) {
         this.noPuertas = noPuertas;
     }
-   
+
+	@Override
+	public String toString() {
+		return super.getPlaca() + " -> " + super.getMarca() + " " + super.getModelo() + " " + this.noPuertas + " puertas";
+	}
+    
+    
+       
 }

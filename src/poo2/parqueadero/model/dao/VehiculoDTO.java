@@ -47,5 +47,10 @@ public class VehiculoDTO {
         this.cilindraje = cilindraje;
     }
 
+	@Override
+	public String toString() {
+		return marca + " " + modelo + " -> " + placa;
+	}
+
     
 }
